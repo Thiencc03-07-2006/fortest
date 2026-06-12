@@ -1,48 +1,38 @@
 {
   "info": {
-    "name": "Rikkei Bank API - Full Test Collection",
-    "description": "Collection test tất cả tính năng của Rikkei Bank (Auth, Account, User, KYC...)",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "name": "Rikkei Bank API - Full Features",
+    "description": "Collection test tất cả tính năng: Auth (JWT + Refresh + Revoke), Register, eKYC, Account, Transfer, Statement, etc.",
+    "_postman_id": "rikkei-bank-full-test"
   },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080",
-      "type": "string"
-    },
-    {
-      "key": "accessToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "refreshToken",
-      "value": "",
-      "type": "string"
-    }
-  ],
   "item": [
     {
-      "name": "Auth",
+      "name": "1. Auth & Security",
       "item": [
         {
-          "name": "1. Register",
+          "name": "Register (Đăng ký)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser123\",\n  \"password\": \"Password@123\",\n  \"email\": \"test123@gmail.com\",\n  \"fullName\": \"Nguyễn Văn Test\"\n}"
+              "raw": "{\n  \"username\": \"customer01\",\n  \"password\": \"Password123!\",\n  \"email\": \"customer01@example.com\",\n  \"fullName\": \"Nguyễn Văn A\",\n  \"phone\": \"0123456789\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
-            }
+            "url": "{{base_url}}/api/auth/register"
           }
         },
         {
-          "name": "2. Login",
+          "name": "Login (Cấp JWT)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"customer01\",\n  \"password\": \"Password123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/auth/login"
+          },
           "event": [
             {
               "listen": "test",
@@ -50,73 +40,85 @@
                 "exec": [
                   "if (pm.response.code === 200) {",
                   "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set('accessToken', json.data.accessToken);",
-                  "    pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
-                  "    console.log('Access Token saved!');",
+                  "    pm.environment.set('accessToken', json.data.accessToken);",
+                  "    pm.environment.set('refreshToken', json.data.refreshToken);",
+                  "    console.log('✅ Tokens saved');",
                   "}"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Refresh Token",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser123\",\n  \"password\": \"Password@123\"\n}"
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
-            }
+            "url": "{{base_url}}/api/auth/refresh"
           }
         },
         {
-          "name": "3. Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            },
-            "url": "{{baseUrl}}/api/auth/refresh"
-          }
-        },
-        {
-          "name": "4. Logout",
+          "name": "Logout (Revoke Token)",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
-            "url": "{{baseUrl}}/api/auth/logout"
+            "url": "{{base_url}}/api/auth/logout"
           }
         },
         {
-          "name": "5. Forgot Password",
+          "name": "Forgot Password",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser123\"\n}"
+              "raw": "{\n  \"username\": \"customer01\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/auth/forgot-password"
+            "url": "{{base_url}}/api/auth/forgot-password"
           }
         }
       ]
     },
     {
-      "name": "Customer - Account",
+      "name": "2. Customer Features",
       "item": [
+        {
+          "name": "Upload eKYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "idNumber", "value": "123456789", "type": "text" },
+                { "key": "fullName", "value": "Nguyễn Văn A", "type": "text" },
+                { "key": "dob", "value": "2000-01-01", "type": "text" },
+                { "key": "sex", "value": "MALE", "type": "text" },
+                { "key": "address", "value": "Hà Nội", "type": "text" },
+                { "key": "file", "type": "file", "src": [] }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/customer/kyc/upload"
+          }
+        },
         {
           "name": "Get Balance",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/customer/accounts/balance"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{base_url}}/api/v1/customer/accounts/balance"
           }
         },
         {
@@ -124,25 +126,29 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"toAccountNumber\": \"123456789\",\n  \"amount\": 1000000,\n  \"pin\": \"123456\",\n  \"description\": \"Chuyển tiền test\"\n}"
+              "raw": "{\n  \"toAccountNumber\": \"ACCOUNT_002\",\n  \"amount\": 1000000,\n  \"pin\": \"123456\",\n  \"description\": \"Chuyển tiền test\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/v1/customer/accounts/transfer"
+            "url": "{{base_url}}/api/v1/customer/accounts/transfer"
           }
         },
         {
-          "name": "Transaction Statement",
+          "name": "Transaction Statement (with pagination)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/customer/accounts/statement?page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "customer", "accounts", "statement"]
+              "raw": "{{base_url}}/api/v1/customer/accounts/statement?page=0&size=10",
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
             }
           }
         },
@@ -151,61 +157,50 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"oldPin\": \"123456\",\n  \"newPin\": \"654321\"\n}"
+              "raw": "{\n  \"oldPin\": \"123456\",\n  \"newPin\": \"654321\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/v1/customer/accounts/change-pin"
+            "url": "{{base_url}}/api/v1/customer/accounts/change-pin"
           }
         }
       ]
     },
     {
-      "name": "User & KYC",
+      "name": "3. Staff / Admin",
       "item": [
         {
-          "name": "Upload KYC (Customer)",
+          "name": "Approve eKYC (STAFF)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                { "key": "idNumber", "value": "123456789012", "type": "text" },
-                { "key": "fullName", "value": "Nguyễn Văn Test", "type": "text" },
-                { "key": "dob", "value": "2000-01-01", "type": "text" },
-                { "key": "sex", "value": "MALE", "type": "text" },
-                { "key": "address", "value": "Hà Nội", "type": "text" },
-                { "key": "file", "type": "file", "src": [] }
-              ]
-            },
-            "url": "{{baseUrl}}/api/v1/customer/kyc/upload"
-          }
-        },
-        {
-          "name": "Approve KYC (Staff)",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/kyc/approve/1?status=CONFIRM",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "kyc", "approve", "1"]
+              "raw": "{{base_url}}/api/v1/staff/kyc/approve/{{kycId}}?status=CONFIRM",
+              "query": [{ "key": "status", "value": "CONFIRM" }]
             }
           }
         },
         {
-          "name": "Get All Users (Admin/Staff)",
+          "name": "Get All Users (Pagination)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/users?page=0&size=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users?page=0&size=10"
           }
         }
       ]
     }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
   ]
 }
