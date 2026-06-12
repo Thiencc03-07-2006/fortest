@@ -6,7 +6,7 @@ plugins {
 
 group = 'springboot_hellocntt2'
 version = '0.0.1-SNAPSHOT'
-description = 'Project_CuoiMon'
+description = 'rikkei_bank'
 
 java {
     toolchain {
