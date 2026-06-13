@@ -55,7 +55,7 @@ public class AccountServiceImpl implements AccountService {
     // Annotation @Transactional bắt buộc để rollback nếu xảy ra bất kỳ lỗi gì ở giữa quá trình chuyển tiền
     @Override
     @Transactional
-    public Transaction transfer(User user, TransferRequest request) {
+    public TransactionResponseDto transfer(User user, TransferRequest request) {
         // 1. Tìm tài khoản nguồn (gửi tiền) của User hiện tại
         Account sourceAccount = accountRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Bạn chưa được cấp tài khoản ngân hàng hoặc chưa eKYC!"));
@@ -115,7 +115,19 @@ public class AccountServiceImpl implements AccountService {
                 .toAccount(targetAccount)
                 .build();
 
-        return transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        return TransactionResponseDto.builder()
+                .id(savedTransaction.getId())
+                .transactionCode(savedTransaction.getTransactionCode())
+                .amount(savedTransaction.getAmount())
+                .description(savedTransaction.getDescription())
+                .status(savedTransaction.getStatus())
+                .type("DEBIT") // Vì là người gửi nên luôn hiển thị là giao dịch trừ tiền (DEBIT)
+                .fromAccountNumber(sourceAccount.getAccountNumber())
+                .toAccountNumber(targetAccount.getAccountNumber())
+                .createdAt(savedTransaction.getCreatedAt())
+                .build();
     }
 
     // Xem sao kê lịch sử giao dịch (FR-08)

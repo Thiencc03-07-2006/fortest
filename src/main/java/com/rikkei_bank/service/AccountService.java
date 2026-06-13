@@ -14,7 +14,7 @@ public interface AccountService {
     AccountResponse getBalance(User user);
 
     // Chuyển tiền nội bộ/liên ngân hàng (FR-07)
-    Transaction transfer(User user, TransferRequest request);
+    TransactionResponseDto transfer(User user, TransferRequest request);
 
     // Xem sao kê lịch sử giao dịch (FR-08)
     Page<TransactionResponseDto> getStatement(User user, Pageable pageable);

@@ -22,7 +22,7 @@ public class Account {
     private String accountNumber;
 
     @Column(nullable = false, precision = 18, scale = 2)
-    private BigDecimal balance; // Dùng BigDecimal để lưu số dư tiền tệ chính xác tuyệt đối
+    private BigDecimal balance;
 
     @Column(nullable = false, length = 10)
     private String currency; // Loại tiền tệ, ví dụ: "VND"

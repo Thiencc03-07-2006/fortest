@@ -3,6 +3,7 @@ package com.rikkei_bank.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rikkei_bank.model.dto.response.AccountResponse;
 import com.rikkei_bank.model.dto.request.TransferRequest;
+import com.rikkei_bank.model.dto.response.TransactionResponseDto;
 import com.rikkei_bank.model.entity.Account;
 import com.rikkei_bank.model.entity.Transaction;
 import com.rikkei_bank.model.entity.User;
@@ -82,27 +83,28 @@ public class AccountControllerTest {
         request.setDescription("Chuyen tien");
         request.setTransactionPin("111222");
 
-        Account fromAcc = Account.builder().accountNumber("99900000001").build();
-        Account toAcc = Account.builder().accountNumber("99900000002").build();
-
-        Transaction tx = Transaction.builder()
+        // Thay vì dùng Entity Transaction, ta dùng DTO
+        TransactionResponseDto txDto = TransactionResponseDto.builder()
                 .transactionCode("TX12345678")
                 .amount(BigDecimal.valueOf(20000))
-                .fromAccount(fromAcc)
-                .toAccount(toAcc)
+                .fromAccountNumber("99900000001")
+                .toAccountNumber("99900000002")
                 .status("SUCCESS")
                 .build();
 
         when(userRepository.findById(any())).thenReturn(Optional.of(testUser));
-        when(accountService.transfer(any(User.class), any(TransferRequest.class))).thenReturn(tx);
+
+        // Mock service trả về DTO thay vì Entity
+        when(accountService.transfer(any(User.class), any(TransferRequest.class))).thenReturn(txDto);
 
         mockMvc.perform(post("/api/v1/customer/accounts/transfer")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Giao dịch chuyển khoản thành công!"))
                 .andExpect(jsonPath("$.data.transactionCode").value("TX12345678"))
+                .andExpect(jsonPath("$.data.fromAccountNumber").value("99900000001")) // Kiểm tra thêm trường mới
                 .andExpect(jsonPath("$.data.status").value("SUCCESS"));
     }
 }

@@ -2,6 +2,7 @@ package com.rikkei_bank.service;
 
 import com.rikkei_bank.model.dto.response.AccountResponse;
 import com.rikkei_bank.model.dto.request.TransferRequest;
+import com.rikkei_bank.model.dto.response.TransactionResponseDto;
 import com.rikkei_bank.model.entity.Account;
 import com.rikkei_bank.model.entity.Transaction;
 import com.rikkei_bank.model.entity.User;
@@ -116,7 +117,7 @@ public class AccountServiceImplTest {
 
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Transaction tx = accountService.transfer(testUser, transferRequest);
+        TransactionResponseDto tx = accountService.transfer(testUser, transferRequest);
 
         assertNotNull(tx);
         assertEquals(BigDecimal.valueOf(20000), tx.getAmount());

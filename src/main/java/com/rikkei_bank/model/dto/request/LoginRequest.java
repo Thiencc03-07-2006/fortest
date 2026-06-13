@@ -3,7 +3,6 @@ package com.rikkei_bank.model.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
-// packet dto để nhận dữ liệu từ client gửi lên, sau đó sẽ được chuyển thành entity để lưu vào database
 
 @Getter
 @Setter

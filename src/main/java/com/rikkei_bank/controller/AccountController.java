@@ -52,20 +52,22 @@ public class AccountController {
     // 2. API Chuyển tiền (Nội bộ / Liên ngân hàng - FR-07 / Role CUSTOMER)
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/transfer")
-    public ResponseEntity<ApiResponse<Transaction>> transfer(
+    public ResponseEntity<ApiResponse<TransactionResponseDto>> transfer(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody TransferRequest request) {
 
         User user = userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin khách hàng!"));
 
-        Transaction transaction = accountService.transfer(user, request);
+        // Gọi hàm và hứng bằng DTO
+        TransactionResponseDto transactionDto = accountService.transfer(user, request);
 
-        ApiResponse<Transaction> response = ApiResponse.<Transaction>builder()
+        ApiResponse<TransactionResponseDto> response = ApiResponse.<TransactionResponseDto>builder()
                 .success(true)
                 .message("Giao dịch chuyển khoản thành công!")
-                .data(transaction)
+                .data(transactionDto)
                 .build();
+
         return ResponseEntity.ok(response);
     }
 
